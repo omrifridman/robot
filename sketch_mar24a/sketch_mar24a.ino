@@ -7,6 +7,79 @@
 #define NUM_COMMANDS_TURN 50
 #define NUMBER_WAIT 10
 
+const int motorPinR1 = 4;    // Motor Right IN1
+const int motorPinR2 = 5;    // Motor Right IN2
+
+const int motorPinL1 = 6;    // Motor Left IN1
+const int motorPinL2 = 7;   // Motor Left IN2
+int maze_level = 1;
+
+/*
+Function to control the movement of a motor (Left or Right).
+direction: 1 for forward, -1 for backward, 0 to stop.
+speed: The speed value (0-255) for PWM control.
+*/
+void moveMotor(int motorPin1, int motorPin2, int direction, int speed) {
+  if (direction == 1) {  // Move forward
+    digitalWrite(motorPin1, HIGH);  // Set IN1 HIGH
+    digitalWrite(motorPin2, LOW);   // Set IN2 LOW
+  } else if (direction == -1) {  // Move backward
+    digitalWrite(motorPin1, LOW);   // Set IN1 LOW
+    digitalWrite(motorPin2, HIGH);  // Set IN2 HIGH
+  } else {  // Stop (direction == 0)
+    digitalWrite(motorPin1, LOW);   // Set both IN1 and IN2 to LOW
+    digitalWrite(motorPin2, LOW);
+  }
+}
+
+/*
+Move the robot forward.
+Accepts speed (0-255) to set motor speed.
+*/
+void moveForward(int speed) {
+  moveMotor(motorPinR1, motorPinR2, 1, speed);  // Move right motor forward
+  moveMotor(motorPinL1, motorPinL2, 1, speed);  // Move left motor forward
+}
+
+/*
+Move the robot backward.
+Accepts speed (0-255) to set motor speed.
+*/
+void moveBackward(int speed) {
+  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Move right motor backward
+  moveMotor(motorPinL1, motorPinL2, -1, speed);  // Move left motor backward
+}
+
+/*
+Rotate the robot to the right.
+Right motor moves forward, left motor moves backward.
+*/
+void turnRight(int speed) {
+  moveMotor(motorPinR1, motorPinR2, 1, speed);   // Right motor forward
+  moveMotor(motorPinL1, motorPinL2, -1, speed);  // Left motor backward
+}
+
+/*
+Rotate the robot to the left.
+Right motor moves backward, left motor moves forward.
+*/
+void turnLeft(int speed) {
+  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Right motor backward
+  moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
+}
+
+void do_command(int code) {
+  if(code == -1) {
+    moveBackword(100)
+  }
+  if(code == 1) {
+    moveForward(100)
+  }
+  else {
+    moveForward(0)
+  }
+}
+
 typedef struct
 {
   char speed_right;
