@@ -13,7 +13,7 @@ const int motorPinR2 = 5;    // Motor Right IN2
 
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
-
+int maze_level = 1;
 
 /*
 Function to control the movement of a motor (Left or Right).
@@ -77,6 +77,135 @@ void stopMotors() {
   moveMotor(motorPinL1, motorPinL2, 0, 0);  // Stop left motor (set direction to stop and speed to 0)
 }
 
+void solve_stage1()
+{
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+}
+
+void solve_stage2()
+{
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+}
+
+void solve_stage3()
+{
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnLeft(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+
+  turnRight(100);
+  delay(2000);
+
+  moveForward(100);
+  delay(2000);
+}
+
 /*
 Setup function runs once at the beginning to initialize motor pins.
 */
@@ -87,30 +216,43 @@ void setup() {
 
   pinMode(motorPinL1, OUTPUT);
   pinMode(motorPinL2, OUTPUT);
+
+  if (mazeLevel == 1)
+  {
+    solve_stage1();
+  }
+  else if (mazeLevel == 2)
+  {
+    solve_stage2();
+  }
+  else
+  {
+    solve_stage3();
+  }
 }
 
 /*
 Main loop function runs repeatedly to perform the robot movements.
 */
 void loop() {
-  // Move forward with speed 100
-  moveForward(100);
-  delay(2000);  // Keep moving forward for 2 seconds
+  // // Move forward with speed 100
+  // moveForward(100);
+  // delay(2000);  // Keep moving forward for 2 seconds
 
-  // Move backward with speed 100
-  moveBackward(100);
-  delay(2000);  // Keep moving backward for 2 seconds
+  // // Move backward with speed 100
+  // moveBackward(100);
+  // delay(2000);  // Keep moving backward for 2 seconds
 
-  // Turn right with speed 100
-  turnRight(100);
-  delay(2000);  // Keep turning right for 2 seconds
+  // // Turn right with speed 100
+  // turnRight(100);
+  // delay(2000);  // Keep turning right for 2 seconds
 
-  // Turn left with speed 100
-  turnLeft(100);
-  delay(2000);  // Keep turning left for 2 seconds
+  // // Turn left with speed 100
+  // turnLeft(100);
+  // delay(2000);  // Keep turning left for 2 seconds
 
-  // Stop both motors after completing all movements
-  stopMotors();
-  delay(1000);  // Wait for 1 second before starting the next iteration
+  // // Stop both motors after completing all movements
+  // stopMotors();
+  // delay(1000);  // Wait for 1 second before starting the next iteration
 }
 
