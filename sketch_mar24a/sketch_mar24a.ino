@@ -68,23 +68,12 @@ void turnLeft(int speed) {
   moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
 }
 
-void do_command(int code) {
-  if(code == -1) {
-    moveBackword(100)
-  }
-  if(code == 1) {
-    moveForward(100)
-  }
-  else {
-    moveForward(0)
-  }
-}
-
 typedef struct
 {
   char speed_right;
   char speed_left;
 } command;
+
 
 int LeftSensor = 8;
 int MiddleSensor1 = 9;
@@ -193,7 +182,24 @@ int get_next_commands(command** commands_waiting, int command_number)
 
 void do_command(command command_now)
 {
-
+    if(command_now.speed_right == -1) {
+        moveMotor(motorPinR1, motorPinR2, -1, speed);
+    }
+    if(command_now.speed_right == 1) {
+        moveMotor(motorPinR1, motorPinR2, 1, speed);
+    }
+    if(command_now.speed_right == 0) {
+        moveMotor(motorPinR1, motorPinR2, 0, speed);
+    }
+    if(command_now.speed_left == -1) {
+        moveMotor(motorPinL1, motorPinL2, -1, speed);
+    }
+    if(command_now.speed_left == 1) {
+      moveMotor(motorPinL1, motorPinL2, 1, speed);
+    }
+    if(command_now.speed_right == 0) {
+        moveMotor(motorPinL1, motorPinL2, 0, speed);
+    }
 }
 
 void setup()
