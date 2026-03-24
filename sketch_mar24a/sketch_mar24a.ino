@@ -39,11 +39,11 @@ point* get_sensor_point_pos(total_state* my_state, float sensor_distance, float 
 
 
 
-void gather_data_sensor(degree_from_forward, sensor_number, distance_forward)
+void gather_data_sensor(float degree_from_forward, int sensor_number, float distance_forward)
 {
   if (digitalRead(sensor_number) == IS_WALL)
   {
-
+    
   }
 }
 
