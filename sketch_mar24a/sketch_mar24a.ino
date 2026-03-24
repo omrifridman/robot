@@ -1,168 +1,116 @@
-// -------------------------------------------------
-// Copyright (c) 2023 HiBit <https://www.hibit.dev>
-// -------------------------------------------------
-// -------------------------------------------------
-// Copyright (c) 2023 HiBit <https://www.hibit.dev>
-// -------------------------------------------------
-// -------------------------------------------------
-// Copyright (c) 2023 HiBit <https://www.hibit.dev>
-// -------------------------------------------------
+/*
+Arduino Motor Control Code: Forward, Backward, Turn, and Stop with PWM
+
+This code allows you to control a robot's motors to move forward, backward, turn left, turn right, and stop.
+The speed of the motors is controlled using PWM (Pulse Width Modulation).
+
+Each motor has two pins for direction control and one pin for speed control.
+
+*/
+
+const int motorPinR1 = 4;    // Motor Right IN1
+const int motorPinR2 = 5;    // Motor Right IN2
+
+const int motorPinL1 = 6;    // Motor Left IN1
+const int motorPinL2 = 7;   // Motor Left IN2
 
 
-// Motor A   
-#define ENA_PIN 8 //PWM   
-#define IN1_PIN 4 
-#define IN2_PIN 5   
-// Motor B   
-#define ENB_PIN 9 //PWM   
-#define IN3_PIN 6   
-#define IN4_PIN 7   
-struct motor {   
-	 byte speed = 0;   
-	 struct {   
-	   byte input1 = LOW;   
-	   byte input2 = LOW;   
-	 } direction;   
-}; 
-
-
-
-
-
-// -------------------------------------------------
-// Copyright (c) 2023 HiBit <https://www.hibit.dev>
-// -------------------------------------------------
-
-void unsetMotorDirection(motor &motor)
-{
-  motor.direction.input1 = LOW;
-  motor.direction.input2 = LOW;
+/*
+Function to control the movement of a motor (Left or Right).
+direction: 1 for forward, -1 for backward, 0 to stop.
+speed: The speed value (0-255) for PWM control.
+*/
+void moveMotor(int motorPin1, int motorPin2, int direction, int speed) {
+  if (direction == 1) {  // Move forward
+    digitalWrite(motorPin1, HIGH);  // Set IN1 HIGH
+    digitalWrite(motorPin2, LOW);   // Set IN2 LOW
+  } else if (direction == -1) {  // Move backward
+    digitalWrite(motorPin1, LOW);   // Set IN1 LOW
+    digitalWrite(motorPin2, HIGH);  // Set IN2 HIGH
+  } else {  // Stop (direction == 0)
+    digitalWrite(motorPin1, LOW);   // Set both IN1 and IN2 to LOW
+    digitalWrite(motorPin2, LOW);
+  }
 }
 
-void setMotorDirectionForward(motor &motor)
-{
-  motor.direction.input1 = HIGH;
-  motor.direction.input2 = LOW;
+/*
+Move the robot forward.
+Accepts speed (0-255) to set motor speed.
+*/
+void moveForward(int speed) {
+  moveMotor(motorPinR1, motorPinR2, 1, speed);  // Move right motor forward
+  moveMotor(motorPinL1, motorPinL2, 1, speed);  // Move left motor forward
 }
 
-void setMotorDirectionBackward(motor &motor)
-{
-  motor.direction.input1 = LOW;
-  motor.direction.input2 = HIGH;
+/*
+Move the robot backward.
+Accepts speed (0-255) to set motor speed.
+*/
+void moveBackward(int speed) {
+  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Move right motor backward
+  moveMotor(motorPinL1, motorPinL2, -1, speed);  // Move left motor backward
 }
 
-bool isMotorDirectionUnset(motor &motor)
-{
-  return motor.direction.input1 == LOW && motor.direction.input2 == LOW;
+/*
+Rotate the robot to the right.
+Right motor moves forward, left motor moves backward.
+*/
+void turnRight(int speed) {
+  moveMotor(motorPinR1, motorPinR2, 1, speed);   // Right motor forward
+  moveMotor(motorPinL1, motorPinL2, -1, speed);  // Left motor backward
 }
 
-bool isMotorDirectionForward(motor &motor)
-{
-  return motor.direction.input1 == HIGH && motor.direction.input2 == LOW;
+/*
+Rotate the robot to the left.
+Right motor moves backward, left motor moves forward.
+*/
+void turnLeft(int speed) {
+  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Right motor backward
+  moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
 }
 
-bool isMotorDirectionBackward(motor &motor)
-{
-  return motor.direction.input1 == LOW && motor.direction.input2 == HIGH;
-}
-void sendToMotor(motor motor, int directionPin1, int directionPin2)
-{
-  // Set direction
-  digitalWrite(directionPin1, motor.direction.input1);
-  digitalWrite(directionPin2, motor.direction.input2);
+/*
+Stop both motors.
+*/
+void stopMotors() {
+  moveMotor(motorPinR1, motorPinR2, 0, 0);  // Stop right motor (set direction to stop and speed to 0)
+  moveMotor(motorPinL1, motorPinL2, 0, 0);  // Stop left motor (set direction to stop and speed to 0)
 }
 
-// Send to motor without jumper
-void sendToMotor(motor motor, int speedPin, int directionPin1, int directionPin2)
-{
-  // Set speed
-  analogWrite(speedPin, motor.speed);
+/*
+Setup function runs once at the beginning to initialize motor pins.
+*/
+void setup() {
+  // Initialize motor pins as OUTPUT
+  pinMode(motorPinR1, OUTPUT);
+  pinMode(motorPinR2, OUTPUT);
 
-  // Set direction
-  digitalWrite(directionPin1, motor.direction.input1);
-  digitalWrite(directionPin2, motor.direction.input2);
-}
-void setMotorSpeed(motor &motor, int speed)
-{
-  motor.speed = constrain(speed, 0, 255); // Force values between 0-255 (PWM)
+  pinMode(motorPinL1, OUTPUT);
+  pinMode(motorPinL2, OUTPUT);
 }
 
-void minMotorSpeed(motor &motor)
-{
-  setMotorSpeed(motor, 0);
+/*
+Main loop function runs repeatedly to perform the robot movements.
+*/
+void loop() {
+  // Move forward with speed 100
+  moveForward(100);
+  delay(2000);  // Keep moving forward for 2 seconds
+
+  // Move backward with speed 100
+  moveBackward(100);
+  delay(2000);  // Keep moving backward for 2 seconds
+
+  // Turn right with speed 100
+  turnRight(100);
+  delay(2000);  // Keep turning right for 2 seconds
+
+  // Turn left with speed 100
+  turnLeft(100);
+  delay(2000);  // Keep turning left for 2 seconds
+
+  // Stop both motors after completing all movements
+  stopMotors();
+  delay(1000);  // Wait for 1 second before starting the next iteration
 }
 
-void maxMotorSpeed(motor &motor)
-{
-  setMotorSpeed(motor, 255);
-}
-
-byte getMotorSpeed(motor &motor)
-{
-  return motor.speed;
-}
-motor motorA, motorB;   
-void setup()   
-{   
-	 Serial.begin(115200);   
-	 // Set PWM & direction pins to output for both motor   
-	 pinMode(ENA_PIN, OUTPUT);   
-	 pinMode(IN1_PIN, OUTPUT);   
-	 pinMode(IN2_PIN, OUTPUT);   
-	 pinMode(ENB_PIN, OUTPUT);   
-	 pinMode(IN3_PIN, OUTPUT);   
-	 pinMode(IN4_PIN, OUTPUT);   
-}   
-void loop()   
-{   
-	 Serial.println("Motors are stopped now");   
-	 Serial.println("Set direction FORWARD");   
-	 delay(2000);   
-	 setMotorDirectionForward(motorA);   
-	 setMotorDirectionForward(motorB);   
-	 Serial.println("Gradually increase motors speed to max");   
-	 increaseMotorsSpeed();   
-	 Serial.println("Motors are on full speed now");   
-	 delay(2000);   
-	 Serial.println("Gradually decrease motors speed to min");   
-	 decreaseMotorsSpeed();   
-	 Serial.println("Motors are stopped now");   
-	 Serial.println("Set direction BACKWARD");   
-	 delay(2000);   
-	 setMotorDirectionBackward(motorA);   
-	 setMotorDirectionBackward(motorB);   
-	 Serial.println("Gradually increase motors speed to max");   
-	 increaseMotorsSpeed();   
-	 Serial.println("Motors are on full speed now");   
-	 delay(2000);   
-	 Serial.println("Gradually decrease motors speed to min");   
-	 decreaseMotorsSpeed();   
-}   
-void sendToMotorA()   
-{   
-	 sendToMotor(motorA, ENA_PIN, IN1_PIN, IN2_PIN);   
-}   
-void sendToMotorB()   
-{   
-	 sendToMotor(motorB, ENB_PIN, IN3_PIN, IN4_PIN);   
-}   
-void increaseMotorsSpeed()   
-{   
-	 for (int speed = 0; speed <= 255; speed++) {   
-	   setMotorSpeed(motorA, speed);   
-	   setMotorSpeed(motorB, speed);   
-	   sendToMotorA();   
-	   sendToMotorB();   
-	   delay(20); // Add small delay between changes   
-	 }   
-}   
-void decreaseMotorsSpeed()   
-{   
-	 for (int speed = 255; speed >= 0; speed--) {   
-	   setMotorSpeed(motorA, speed);   
-	   setMotorSpeed(motorB, speed);   
-	   sendToMotorA();   
-	   sendToMotorB();   
-	   delay(20); // Add small delay between changes   
-	 }   
-}  
