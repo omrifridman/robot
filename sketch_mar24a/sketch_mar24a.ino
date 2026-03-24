@@ -1,4 +1,5 @@
 #define MAX_SIZE 50
+#define IS_WALL 1
 
 struct command
 {
@@ -13,17 +14,38 @@ int MiddleSensor2 = 10;
 int RightSensor = 11;
 int mazeLevel = 0;
 
-class total_state
+struct point
 {
-  float position_x;
-  float position_y;
+  float x;
+  float y;
+}
+
+struct total_state
+{
+  struct point position;
   float degree;
   int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
   int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
 }
 
+point* get_sensor_point_pos(total_state* my_state, float sensor_distance, float sensor_degree)
+{
+	float total_sensor_degree = my_state->degree + sensor_degree;
+	point* new_point = malloc(sizeof(point))
+	new_point->x = my_state->point.x + cos((M_PI * total_sensor_degree) / 180)
+	new_point->y = my_state->point.y + sin((M_PI * total_sensor_degree) / 180)
+	return new_point
+}
 
 
+
+void gather_data_sensor(degree_from_forward, sensor_number, distance_forward)
+{
+  if (digitalRead(sensor_number) == IS_WALL)
+  {
+
+  }
+}
 
 // place in array of operations
 int stage = -1;
@@ -106,10 +128,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  int state_left = digitalRead(LeftSensor);
-  int state_middle1 = digitalRead(MiddleSensor1);
-  int state_middle2 = digitalRead(MiddleSensor2);
-  int state_right = digitalRead(RightSensor);
+  gather_data_sensor(, LeftSensor, );
+  gather_data_sensor(, MiddleSensor1, );
+  gather_data_sensor(, MiddleSensor2, );
+  gather_data_sensor(, RightSensor, );
   Serial.print(state_left, HEX);
   if (ind == number_commands)
   {
