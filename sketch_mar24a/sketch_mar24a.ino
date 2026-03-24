@@ -1,258 +1,127 @@
-/*
-Arduino Motor Control Code: Forward, Backward, Turn, and Stop with PWM
+#define MAX_SIZE 50
 
-This code allows you to control a robot's motors to move forward, backward, turn left, turn right, and stop.
-The speed of the motors is controlled using PWM (Pulse Width Modulation).
+struct command
+{
+  bool active_command;
+  char speed_right;
+  char speed_left;
+};
 
-Each motor has two pins for direction control and one pin for speed control.
+int LeftSensor = 8;
+int MiddleSensor1 = 9;
+int MiddleSensor2 = 10;
+int RightSensor = 11;
+int mazeLevel = 0;
 
-*/
+class total_state
+{
+  float position_x;
+  float position_y;
+  float degree;
+  int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
+  int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
+}
 
-const int motorPinR1 = 4;    // Motor Right IN1
-const int motorPinR2 = 5;    // Motor Right IN2
 
-const int motorPinL1 = 6;    // Motor Left IN1
-const int motorPinL2 = 7;   // Motor Left IN2
-int maze_level = 1;
 
-/*
-Function to control the movement of a motor (Left or Right).
-direction: 1 for forward, -1 for backward, 0 to stop.
-speed: The speed value (0-255) for PWM control.
-*/
-void moveMotor(int motorPin1, int motorPin2, int direction, int speed) {
-  if (direction == 1) {  // Move forward
-    digitalWrite(motorPin1, HIGH);  // Set IN1 HIGH
-    digitalWrite(motorPin2, LOW);   // Set IN2 LOW
-  } else if (direction == -1) {  // Move backward
-    digitalWrite(motorPin1, LOW);   // Set IN1 LOW
-    digitalWrite(motorPin2, HIGH);  // Set IN2 HIGH
-  } else {  // Stop (direction == 0)
-    digitalWrite(motorPin1, LOW);   // Set both IN1 and IN2 to LOW
-    digitalWrite(motorPin2, LOW);
+
+// place in array of operations
+int stage = -1;
+// place in array of commands of currecnt operation
+int ind = -1;
+// array of commands in current operation
+command* commands_waiting;
+// number of commands in current operation
+int number_commands = 0;
+// 0 - do nothing
+// 1 - move forward one step
+// 2 - rotate 90 degrees left
+// 3 - rotate 90 degrees right
+int operations[10];
+
+
+// initialize commands in commands_forward and return the number of commands
+int get_command_forward(command** commands_forward)
+{
+
+}
+
+// initialize commands in commands_right and return the number of commands
+int get_command_right(command** commands_right)
+{
+
+}
+
+// initialize commands in commands_left and return the number of commands
+int get_command_left(command** commands_left)
+{
+
+}
+
+int get_next_commands(command** commands_waiting, int command_number)
+{
+  if (command_number == 1)
+  {
+    return get_command_forward(&commands_waiting);
+  }
+  if (command_number == 2)
+  {
+    return get_command_left(&commands_waiting);
+  }
+  if (command_number == 3)
+  {
+    return get_command_right(&commands_waiting);
   }
 }
 
-/*
-Move the robot forward.
-Accepts speed (0-255) to set motor speed.
-*/
-void moveForward(int speed) {
-  moveMotor(motorPinR1, motorPinR2, 1, speed);  // Move right motor forward
-  moveMotor(motorPinL1, motorPinL2, 1, speed);  // Move left motor forward
-}
-
-/*
-Move the robot backward.
-Accepts speed (0-255) to set motor speed.
-*/
-void moveBackward(int speed) {
-  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Move right motor backward
-  moveMotor(motorPinL1, motorPinL2, -1, speed);  // Move left motor backward
-}
-
-/*
-Rotate the robot to the right.
-Right motor moves forward, left motor moves backward.
-*/
-void turnRight(int speed) {
-  moveMotor(motorPinR1, motorPinR2, 1, speed);   // Right motor forward
-  moveMotor(motorPinL1, motorPinL2, -1, speed);  // Left motor backward
-}
-
-/*
-Rotate the robot to the left.
-Right motor moves backward, left motor moves forward.
-*/
-void turnLeft(int speed) {
-  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Right motor backward
-  moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
-}
-
-/*
-Stop both motors.
-*/
-void stopMotors() {
-  moveMotor(motorPinR1, motorPinR2, 0, 0);  // Stop right motor (set direction to stop and speed to 0)
-  moveMotor(motorPinL1, motorPinL2, 0, 0);  // Stop left motor (set direction to stop and speed to 0)
-}
-
-void solve_stage1()
+void do_command(command command_now)
 {
-  moveForward(100);
-  delay(2000);
 
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
 }
 
-void solve_stage2()
-{
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-}
-
-void solve_stage3()
-{
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnLeft(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-
-  turnRight(100);
-  delay(2000);
-
-  moveForward(100);
-  delay(2000);
-}
-
-/*
-Setup function runs once at the beginning to initialize motor pins.
-*/
 void setup() {
-  // Initialize motor pins as OUTPUT
-  pinMode(motorPinR1, OUTPUT);
-  pinMode(motorPinR2, OUTPUT);
+  // put your setup code here, to run once:
+  pinMode(LeftSensor, INPUT);
+  pinMode(MiddleSensor1, INPUT);
+  pinMode(MiddleSensor2, INPUT);
+  pinMode(RightSensor, INPUT);
+  Serial.begin(9600);
 
-  pinMode(motorPinL1, OUTPUT);
-  pinMode(motorPinL2, OUTPUT);
-
-  if (mazeLevel == 1)
+  if (mazeLevel == 0)
   {
-    solve_stage1();
+    operations = [1, 1, 3, 1];
   }
-  else if (mazeLevel == 2)
+  else if (mazeLevel == 1)
   {
-    solve_stage2();
+    operations = [1, 2, 1, 3, 1, 2, 1, 2, 1, 1, 2, 1];
   }
   else
   {
-    solve_stage3();
+    operations = [1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 3, 1];
   }
+
+
+
 }
 
-/*
-Main loop function runs repeatedly to perform the robot movements.
-*/
 void loop() {
-  // // Move forward with speed 100
-  // moveForward(100);
-  // delay(2000);  // Keep moving forward for 2 seconds
-
-  // // Move backward with speed 100
-  // moveBackward(100);
-  // delay(2000);  // Keep moving backward for 2 seconds
-
-  // // Turn right with speed 100
-  // turnRight(100);
-  // delay(2000);  // Keep turning right for 2 seconds
-
-  // // Turn left with speed 100
-  // turnLeft(100);
-  // delay(2000);  // Keep turning left for 2 seconds
-
-  // // Stop both motors after completing all movements
-  // stopMotors();
-  // delay(1000);  // Wait for 1 second before starting the next iteration
+  // put your main code here, to run repeatedly:
+  int state_left = digitalRead(LeftSensor);
+  int state_middle1 = digitalRead(MiddleSensor1);
+  int state_middle2 = digitalRead(MiddleSensor2);
+  int state_right = digitalRead(RightSensor);
+  Serial.print(state_left, HEX);
+  if (ind == number_commands)
+  {
+    stage++;
+    ind = 0
+    number_commands = get_next_commands(commands_waiting, operations[stage]);
+  }
+  if (commands_waiting != NULL)
+  {
+    do_command(commands_waiting[ind]);
+    ind++;
+  }
+  
+  Serial.println();
 }
-
