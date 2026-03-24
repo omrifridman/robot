@@ -1,18 +1,22 @@
 #define MAX_SIZE 50
+#define TILE_SIZE 30
+#define WALL_WIDTH 2.35
+#define BIG_WALL 5
 #define IS_WALL 1
+#define NUM_COMMANDS_FORWARD 50
+#define NUM_COMMANDS_TURN 50
+#define NUMBER_WAIT 10
 
-struct command
+typedef struct
 {
-  bool active_command;
   char speed_right;
   char speed_left;
-};
+} command;
 
 int LeftSensor = 8;
 int MiddleSensor1 = 9;
 int MiddleSensor2 = 10;
 int RightSensor = 11;
-int mazeLevel = 0;
 
 struct point
 {
@@ -22,8 +26,8 @@ struct point
 
 struct total_state
 {
-  struct point position;
-  float degree;
+  struct point position = { MAX_SIZE * TILE_SIZE, MAX_SIZE * TILE_SIZE };
+  float degree = 0;
   int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
   int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
 }
@@ -37,13 +41,16 @@ point* get_sensor_point_pos(total_state* my_state, float sensor_distance, float 
 	return new_point
 }
 
+void update_walls_array(point position)
+{
 
+}
 
 void gather_data_sensor(float degree_from_forward, int sensor_number, float distance_forward)
 {
   if (digitalRead(sensor_number) == IS_WALL)
   {
-    
+    update_walls_array(get_sensor_point_pos());
   }
 }
 
@@ -59,25 +66,40 @@ int number_commands = 0;
 // 1 - move forward one step
 // 2 - rotate 90 degrees left
 // 3 - rotate 90 degrees right
-int operations[10];
+struct total_state my_state;
 
 
 // initialize commands in commands_forward and return the number of commands
 int get_command_forward(command** commands_forward)
 {
-
+  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_FORWARD + NUMBER_WAIT));
+  for (int i = 0; i < NUM_COMMANDS_FORWARD; i++)
+    commands_forward[0][i] = { 1, 1 };
+  for (int i = 0; i < NUMBER_WAIT; i++)
+    commands_forward[0][i + NUM_COMMANDS_FORWARD] = { 0, 0 };
+  return NUM_COMMANDS_FORWARD + NUMBER_WAIT;
 }
 
 // initialize commands in commands_right and return the number of commands
 int get_command_right(command** commands_right)
 {
-
+  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
+  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
+    commands_forward[0][i] = { -1, 1 };
+  for (int i = 0; i < NUMBER_WAIT; i++)
+    commands_forward[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
+  return NUM_COMMANDS_TURN + NUMBER_WAIT;
 }
 
 // initialize commands in commands_left and return the number of commands
 int get_command_left(command** commands_left)
 {
-
+  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
+  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
+    commands_forward[0][i] = { 1, -1 };
+  for (int i = 0; i < NUMBER_WAIT; i++)
+    commands_forward[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
+  return NUM_COMMANDS_TURN + NUMBER_WAIT;
 }
 
 int get_next_commands(command** commands_waiting, int command_number)
@@ -101,43 +123,27 @@ void do_command(command command_now)
 
 }
 
-void setup() {
-  // put your setup code here, to run once:
+void setup()
+{
+  my_state = struct total_state;
   pinMode(LeftSensor, INPUT);
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
   pinMode(RightSensor, INPUT);
-  Serial.begin(9600);
-
-  if (mazeLevel == 0)
-  {
-    operations = [1, 1, 3, 1];
-  }
-  else if (mazeLevel == 1)
-  {
-    operations = [1, 2, 1, 3, 1, 2, 1, 2, 1, 1, 2, 1];
-  }
-  else
-  {
-    operations = [1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 3, 1];
-  }
-
-
-
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  gather_data_sensor(, LeftSensor, );
-  gather_data_sensor(, MiddleSensor1, );
-  gather_data_sensor(, MiddleSensor2, );
-  gather_data_sensor(, RightSensor, );
-  Serial.print(state_left, HEX);
+void loop()
+{
+  //gather_data_sensor(, LeftSensor, );
+  //gather_data_sensor(, MiddleSensor1, );
+  //gather_data_sensor(, MiddleSensor2, );
+  //gather_data_sensor(, RightSensor, );
   if (ind == number_commands)
   {
     stage++;
-    ind = 0
-    number_commands = get_next_commands(commands_waiting, operations[stage]);
+    ind = 0;
+
+    number_commands = get_next_commands(&commands_waiting, operations[stage]);
   }
   if (commands_waiting != NULL)
   {
@@ -145,5 +151,4 @@ void loop() {
     ind++;
   }
   
-  Serial.println();
 }
