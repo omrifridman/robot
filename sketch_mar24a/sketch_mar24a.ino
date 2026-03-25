@@ -12,7 +12,30 @@ const int motorPinR2 = 5;    // Motor Right IN2
 
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
-int maze_level = 1;
+int LeftSensor = 8;
+int MiddleSensor1 = 9;
+int MiddleSensor2 = 10;
+int RightSensor = 11;
+
+typedef struct
+{
+  char speed_right;
+  char speed_left;
+} command;
+
+struct point
+{
+  float x;
+  float y;
+};
+
+struct total_state
+{
+  struct point position = { MAX_SIZE * TILE_SIZE, MAX_SIZE * TILE_SIZE };
+  float degree = 0;
+  int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
+  int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
+};
 
 /*
 Function to control the movement of a motor (Left or Right).
@@ -66,32 +89,6 @@ Right motor moves backward, left motor moves forward.
 void turnLeft(int speed) {
   moveMotor(motorPinR1, motorPinR2, -1, speed);  // Right motor backward
   moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
-}
-
-typedef struct
-{
-  char speed_right;
-  char speed_left;
-} command;
-
-
-int LeftSensor = 8;
-int MiddleSensor1 = 9;
-int MiddleSensor2 = 10;
-int RightSensor = 11;
-
-struct point
-{
-  float x;
-  float y;
-}
-
-struct total_state
-{
-  struct point position = { MAX_SIZE * TILE_SIZE, MAX_SIZE * TILE_SIZE };
-  float degree = 0;
-  int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
-  int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
 }
 
 point* get_sensor_point_pos(total_state* my_state, float sensor_distance, float sensor_degree)
@@ -202,6 +199,22 @@ void do_command(command command_now)
     }
 }
 
+int get_next_operation()
+{
+  if (digitalRead(MiddleSensor1) == 1 && digitalRead(MiddleSensor2) == 1)
+  {
+    return 1;
+  }
+  else if (digitalRead(MiddleSensor1) == 1 && digitalRead(MiddleSensor2) == 0)
+  {
+    return 2;
+  }
+  else
+  {
+    return 3;
+  }
+}
+
 void setup()
 {
   my_state = struct total_state;
@@ -221,8 +234,8 @@ void loop()
   {
     stage++;
     ind = 0;
-
-    number_commands = get_next_commands(&commands_waiting, operations[stage]);
+    next_operation = get_next_operation();
+    number_commands = get_next_commands(&commands_waiting, next_operation);
   }
   if (commands_waiting != NULL)
   {
