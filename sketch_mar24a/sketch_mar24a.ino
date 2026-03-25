@@ -6,6 +6,7 @@
 #define NUM_COMMANDS_FORWARD 50
 #define NUM_COMMANDS_TURN 50
 #define NUMBER_WAIT 10
+#define SPEED 100
 
 const int motorPinR1 = 4;    // Motor Right IN1
 const int motorPinR2 = 5;    // Motor Right IN2
@@ -29,13 +30,10 @@ struct point
   float y;
 };
 
-struct total_state
-{
-  struct point position = { MAX_SIZE * TILE_SIZE, MAX_SIZE * TILE_SIZE };
-  float degree = 0;
-  int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
-  int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
-};
+struct point position = { MAX_SIZE * TILE_SIZE, MAX_SIZE * TILE_SIZE };
+float degree = 0;
+int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
+int has_wall_right[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
 
 /*
 Function to control the movement of a motor (Left or Right).
@@ -91,13 +89,13 @@ void turnLeft(int speed) {
   moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
 }
 
-point* get_sensor_point_pos(total_state* my_state, float sensor_distance, float sensor_degree)
+point* get_sensor_point_pos(float sensor_distance, float sensor_degree)
 {
-	float total_sensor_degree = my_state->degree + sensor_degree;
-	point* new_point = malloc(sizeof(point))
-	new_point->x = my_state->point.x + cos((M_PI * total_sensor_degree) / 180)
-	new_point->y = my_state->point.y + sin((M_PI * total_sensor_degree) / 180)
-	return new_point
+	float total_sensor_degree = degree + sensor_degree;
+	point* new_point = malloc(sizeof(point));
+	new_point->x = position.x + cos((M_PI * total_sensor_degree) / 180);
+	new_point->y = position.y + sin((M_PI * total_sensor_degree) / 180);
+	return new_point;
 }
 
 void update_walls_array(point position)
@@ -109,7 +107,7 @@ void gather_data_sensor(float degree_from_forward, int sensor_number, float dist
 {
   if (digitalRead(sensor_number) == IS_WALL)
   {
-    update_walls_array(get_sensor_point_pos());
+    //update_walls_array(get_sensor_point_pos());
   }
 }
 
@@ -125,7 +123,6 @@ int number_commands = 0;
 // 1 - move forward one step
 // 2 - rotate 90 degrees left
 // 3 - rotate 90 degrees right
-struct total_state my_state;
 
 
 // initialize commands in commands_forward and return the number of commands
@@ -142,22 +139,22 @@ int get_command_forward(command** commands_forward)
 // initialize commands in commands_right and return the number of commands
 int get_command_right(command** commands_right)
 {
-  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
+  *commands_right = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
   for (int i = 0; i < NUM_COMMANDS_TURN; i++)
-    commands_forward[0][i] = { -1, 1 };
+    commands_right[0][i] = { -1, 1 };
   for (int i = 0; i < NUMBER_WAIT; i++)
-    commands_forward[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
+    commands_right[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
   return NUM_COMMANDS_TURN + NUMBER_WAIT;
 }
 
 // initialize commands in commands_left and return the number of commands
 int get_command_left(command** commands_left)
 {
-  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
+  *commands_left = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
   for (int i = 0; i < NUM_COMMANDS_TURN; i++)
-    commands_forward[0][i] = { 1, -1 };
+    commands_left[0][i] = { 1, -1 };
   for (int i = 0; i < NUMBER_WAIT; i++)
-    commands_forward[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
+    commands_left[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
   return NUM_COMMANDS_TURN + NUMBER_WAIT;
 }
 
@@ -165,37 +162,37 @@ int get_next_commands(command** commands_waiting, int command_number)
 {
   if (command_number == 1)
   {
-    return get_command_forward(&commands_waiting);
+    return get_command_forward(commands_waiting);
   }
   if (command_number == 2)
   {
-    return get_command_left(&commands_waiting);
+    return get_command_left(commands_waiting);
   }
   if (command_number == 3)
   {
-    return get_command_right(&commands_waiting);
+    return get_command_right(commands_waiting);
   }
 }
 
 void do_command(command command_now)
 {
     if(command_now.speed_right == -1) {
-        moveMotor(motorPinR1, motorPinR2, -1, speed);
+        moveMotor(motorPinR1, motorPinR2, -1, SPEED);
     }
     if(command_now.speed_right == 1) {
-        moveMotor(motorPinR1, motorPinR2, 1, speed);
+        moveMotor(motorPinR1, motorPinR2, 1, SPEED);
     }
     if(command_now.speed_right == 0) {
-        moveMotor(motorPinR1, motorPinR2, 0, speed);
+        moveMotor(motorPinR1, motorPinR2, 0, SPEED);
     }
     if(command_now.speed_left == -1) {
-        moveMotor(motorPinL1, motorPinL2, -1, speed);
+        moveMotor(motorPinL1, motorPinL2, -1, SPEED);
     }
     if(command_now.speed_left == 1) {
-      moveMotor(motorPinL1, motorPinL2, 1, speed);
+      moveMotor(motorPinL1, motorPinL2, 1, SPEED);
     }
     if(command_now.speed_right == 0) {
-        moveMotor(motorPinL1, motorPinL2, 0, speed);
+        moveMotor(motorPinL1, motorPinL2, 0, SPEED);
     }
 }
 
@@ -217,7 +214,6 @@ int get_next_operation()
 
 void setup()
 {
-  my_state = struct total_state;
   pinMode(LeftSensor, INPUT);
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
@@ -234,7 +230,7 @@ void loop()
   {
     stage++;
     ind = 0;
-    next_operation = get_next_operation();
+    int next_operation = get_next_operation();
     number_commands = get_next_commands(&commands_waiting, next_operation);
   }
   if (commands_waiting != NULL)
