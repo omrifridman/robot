@@ -111,10 +111,8 @@ void gather_data_sensor(float degree_from_forward, int sensor_number, float dist
   }
 }
 
-// place in array of operations
-int stage = -1;
 // place in array of commands of currecnt operation
-int ind = -1;
+int ind = 0;
 // array of commands in current operation
 command* commands_waiting;
 // number of commands in current operation
@@ -228,7 +226,6 @@ void loop()
   //gather_data_sensor(, RightSensor, );
   if (ind == number_commands)
   {
-    stage++;
     ind = 0;
     int next_operation = get_next_operation();
     number_commands = get_next_commands(&commands_waiting, next_operation);
