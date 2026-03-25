@@ -7,13 +7,14 @@
 #define NUM_COMMANDS_BACKWARD 2
 #define NUM_COMMANDS_TURN 5
 #define NUMBER_WAIT 5
-#define SPEED 100
-#define TRIGGER_PIN  13
-#define ECHO_PIN     12
+#define SPEED 100 
+
+# define echoPin 12
+# define trigPin 13
 
 const int motorPinR1 = 4;    // Motor Right IN1
 const int motorPinR2 = 5;    // Motor Right IN2
-bool is_third_sensor = false
+bool is_third_sensor = false;
 
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
@@ -22,8 +23,7 @@ int MiddleSensor1 = 10;
 int MiddleSensor2 = 9;
 int RightSensor = 11;
 
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
-float distance;
+//NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 typedef struct
 {
@@ -259,6 +259,36 @@ void setup()
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
   pinMode(RightSensor, INPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  delay(400);
+}
+
+long duration, distance; // start the scan
+
+void do_sonar()
+{
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration*0.0344/2;
+  Serial.print("Distance = ");
+  if (distance <= 4) {
+    Serial.println("Out of range");
+    Serial.println(distance);
+       command command_stop = { 0, 0 };
+    do_command(command_stop);
+    exit(0);
+  }
+  
+  else {
+    Serial.print(distance);
+    Serial.println(" cm");
+  }
+  delay(100); //maybe make this smaller
 }
 
 void loop()
@@ -267,19 +297,6 @@ void loop()
   //gather_data_sensor(, MiddleSensor1, );
   //gather_data_sensor(, MiddleSensor2, );
   //gather_data_sensor(, RightSensor, );
-
-  distance = sonar.ping_cm();
-  
-  // Send results to Serial Monitor
-  Serial.print("Distance = ");
-  if (distance <= 10) {
-    Serial.println("Out of range");
-    terminate();
-  }
-  else {
-    Serial.print(distance);
-    Serial.println(" cm");
-  }
 
   int next_operation = get_next_operation();
 
@@ -290,6 +307,7 @@ void loop()
     {
       command command_stop = { 0, 0 };
       do_command(command_stop);
+      do_sonar();
       delay(NUMBER_WAIT);
     }
     ind = 0;
