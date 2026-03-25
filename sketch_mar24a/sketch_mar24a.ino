@@ -5,7 +5,7 @@
 #define IS_WALL 1
 #define NUM_COMMANDS_FORWARD 8
 #define NUM_COMMANDS_TURN 5
-#define NUMBER_WAIT 10
+#define NUMBER_WAIT 5
 #define SPEED 100
 
 const int motorPinR1 = 4;    // Motor Right IN1
@@ -30,6 +30,7 @@ struct point
   float y;
 };
 
+int operation_now = 0;
 struct point position = { MAX_SIZE * TILE_SIZE, MAX_SIZE * TILE_SIZE };
 float degree = 0;
 int has_wall_up[2 * MAX_SIZE][2 * MAX_SIZE] = { 0 };
@@ -117,10 +118,6 @@ int ind = 0;
 command* commands_waiting;
 // number of commands in current operation
 int number_commands = 0;
-// 0 - do nothing
-// 1 - move forward one step
-// 2 - rotate 90 degrees left
-// 3 - rotate 90 degrees right
 
 
 // initialize commands in commands_forward and return the number of commands
@@ -194,9 +191,17 @@ void do_command(command command_now)
     }
 }
 
+// 0 - do nothing
+// 1 - move forward one step
+// 2 - rotate x degrees left
+// 3 - rotate x degrees right
 int get_next_operation()
 {
-  if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0)
+  if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0 && digitalRead(RightSensor) == 0)
+  {
+    return 3;
+  }
+  else if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0)
   {
     return 1;
   }
@@ -225,13 +230,14 @@ void loop()
   //gather_data_sensor(, MiddleSensor1, );
   //gather_data_sensor(, MiddleSensor2, );
   //gather_data_sensor(, RightSensor, );
-  if (ind == number_commands)
+
+  if (operation_now != get_next_operation() || ind == number_commands)
   {
     ind = 0;
     Serial.print("Next op: ");
-    int next_operation = get_next_operation();
+    operation_now = get_next_operation();
     Serial.println(next_operation);
-    number_commands = get_next_commands(&commands_waiting, next_operation);
+    number_commands = get_next_commands(&commands_waiting, operation_now);
   }
   if (commands_waiting != NULL)
   {
