@@ -7,9 +7,12 @@
 #define NUM_COMMANDS_TURN 5
 #define NUMBER_WAIT 5
 #define SPEED 100
+#define TRIGGER_PIN  13
+#define ECHO_PIN     12
 
 const int motorPinR1 = 4;    // Motor Right IN1
 const int motorPinR2 = 5;    // Motor Right IN2
+bool is_third_sensor = false
 
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
@@ -17,6 +20,9 @@ int LeftSensor = 8;
 int MiddleSensor1 = 10;
 int MiddleSensor2 = 9;
 int RightSensor = 11;
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+float distance;
 
 typedef struct
 {
@@ -197,7 +203,7 @@ void do_command(command command_now)
 // 3 - rotate x degrees right
 int get_next_operation()
 {
-  if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0 && digitalRead(RightSensor) == 0)
+  if (is_third_sensor && digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0 && digitalRead(RightSensor) == 0)
   {
     return 3;
   }
@@ -221,7 +227,7 @@ void setup()
   //pinMode(LeftSensor, INPUT);
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
-  //pinMode(RightSensor, INPUT);
+  pinMode(RightSensor, INPUT);
 }
 
 void loop()
@@ -231,12 +237,25 @@ void loop()
   //gather_data_sensor(, MiddleSensor2, );
   //gather_data_sensor(, RightSensor, );
 
+  distance = sonar.ping_cm();
+  
+  // Send results to Serial Monitor
+  Serial.print("Distance = ");
+  if (distance <= 10) {
+    Serial.println("Out of range");
+    terminate();
+  }
+  else {
+    Serial.print(distance);
+    Serial.println(" cm");
+  }
+
   if (operation_now != get_next_operation() || ind == number_commands)
   {
     ind = 0;
     Serial.print("Next op: ");
     operation_now = get_next_operation();
-    Serial.println(next_operation);
+    Serial.println(operation_now);
     number_commands = get_next_commands(&commands_waiting, operation_now);
   }
   if (commands_waiting != NULL)
