@@ -4,6 +4,7 @@
 #define BIG_WALL 5
 #define IS_WALL 1
 #define NUM_COMMANDS_FORWARD 8
+#define NUM_COMMANDS_BACKWARD 2
 #define NUM_COMMANDS_TURN 5
 #define NUMBER_WAIT 5
 #define SPEED 100
@@ -129,33 +130,54 @@ int number_commands = 0;
 // initialize commands in commands_forward and return the number of commands
 int get_command_forward(command** commands_forward)
 {
-  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_FORWARD + NUMBER_WAIT));
+  *commands_forward = malloc(sizeof(command) * (NUM_COMMANDS_FORWARD));
   for (int i = 0; i < NUM_COMMANDS_FORWARD; i++)
     commands_forward[0][i] = { 1, 1 };
-  for (int i = 0; i < NUMBER_WAIT; i++)
-    commands_forward[0][i + NUM_COMMANDS_FORWARD] = { 0, 0 };
-  return NUM_COMMANDS_FORWARD + NUMBER_WAIT;
+  return NUM_COMMANDS_FORWARD;
 }
 
 // initialize commands in commands_right and return the number of commands
 int get_command_right(command** commands_right)
 {
-  *commands_right = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
-  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
-    commands_right[0][i] = { -1, 1 };
+  *commands_left = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT + NUM_COMMANDS_BACKWARD));
+  for (int i = 0; i < NUM_COMMANDS_BACKWARD; i++)
+    commands_left[0][i] = { -1, -1 };
+
   for (int i = 0; i < NUMBER_WAIT; i++)
-    commands_right[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
-  return NUM_COMMANDS_TURN + NUMBER_WAIT;
+    commands_left[0][i + NUM_COMMANDS_BACKWARD] = { 0, 0 };
+
+  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
+    commands_left[0][i + NUM_COMMANDS_BACKWARD + NUMBER_WAIT] = { -1, 1 };
+  return NUM_COMMANDS_TURN + NUMBER_WAIT + NUM_COMMANDS_BACKWARD;
 }
 
 // initialize commands in commands_left and return the number of commands
 int get_command_left(command** commands_left)
 {
-  *commands_left = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT));
-  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
-    commands_left[0][i] = { 1, -1 };
+  *commands_left = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUMBER_WAIT + NUM_COMMANDS_BACKWARD));
+  for (int i = 0; i < NUM_COMMANDS_BACKWARD; i++)
+    commands_left[0][i] = { -1, -1 };
+
   for (int i = 0; i < NUMBER_WAIT; i++)
-    commands_left[0][i + NUM_COMMANDS_TURN] = { 0, 0 };
+    commands_left[0][i + NUM_COMMANDS_BACKWARD] = { 0, 0 };
+
+  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
+    commands_left[0][i + NUM_COMMANDS_BACKWARD + NUMBER_WAIT] = { 1, -1 };
+  return NUM_COMMANDS_TURN + NUMBER_WAIT + NUM_COMMANDS_BACKWARD;
+}
+
+// initialize commands in commands_left and return the number of commands
+int get_command_back_to_right(command** commands_left)
+{
+  *commands_left = malloc(sizeof(command) * (NUM_COMMANDS_TURN + NUM_COMMANDS_BACKWARD + NUMBER_WAIT * 2));
+  for (int i = 0; i < NUM_COMMANDS_BACKWARD; i++)
+    commands_left[0][i] = { -1, -1 };
+  for (int i = 0; i < NUMBER_WAIT; i++)
+    commands_left[0][i + NUM_COMMANDS_BACKWARD] = { 0, 0 };
+  for (int i = 0; i < NUM_COMMANDS_TURN; i++)
+    commands_left[0][i + NUM_COMMANDS_BACKWARD + NUMBER_WAIT] = { -1, -1 };
+  for (int i = 0; i < NUMBER_WAIT; i++)
+    commands_left[0][i + NUM_COMMANDS_TURN + NUM_COMMANDS_BACKWARD + NUMBER_WAIT] = { 0, 0 };
   return NUM_COMMANDS_TURN + NUMBER_WAIT;
 }
 
@@ -172,6 +194,10 @@ int get_next_commands(command** commands_waiting, int command_number)
   if (command_number == 3)
   {
     return get_command_right(commands_waiting);
+  }
+  if (command_number == 4)
+  {
+    return get_command_back_to_right(commands_waiting);
   }
 }
 
@@ -201,6 +227,7 @@ void do_command(command command_now)
 // 1 - move forward one step
 // 2 - rotate x degrees left
 // 3 - rotate x degrees right
+// 4 - go back and after rotate x degrees right
 int get_next_operation()
 {
   if (is_third_sensor && digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0 && digitalRead(RightSensor) == 0)
@@ -215,9 +242,13 @@ int get_next_operation()
   {
     return 2;
   }
-  else
+  else if (digitalRead(MiddleSensor1) != 0 && digitalRead(MiddleSensor2) == 0)
   {
     return 3;
+  }
+  else if (digitalRead(MiddleSensor1) != 0 && digitalRead(MiddleSensor2) != 0)
+  {
+    return 3; // 4
   }
 }
 
@@ -250,11 +281,20 @@ void loop()
     Serial.println(" cm");
   }
 
-  if (operation_now != get_next_operation() || ind == number_commands)
+  int next_operation = get_next_operation();
+
+  if ((operation_now == 1 && operation_now != next_operation) || ind == number_commands)
   {
+    free(commands_waiting);
+    if (operation_now != next_operation)
+    {
+      command command_stop = { 0, 0 };
+      do_command(command_stop);
+      delay(NUMBER_WAIT);
+    }
     ind = 0;
     Serial.print("Next op: ");
-    operation_now = get_next_operation();
+    operation_now = next_operation;
     Serial.println(operation_now);
     number_commands = get_next_commands(&commands_waiting, operation_now);
   }
