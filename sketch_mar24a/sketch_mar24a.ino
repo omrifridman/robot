@@ -3,16 +3,17 @@
 #define WALL_WIDTH 2.35
 #define BIG_WALL 5
 #define IS_WALL 1
-#define NUM_COMMANDS_FORWARD 8
-#define NUM_COMMANDS_TURN 5
+#define NUM_COMMANDS_FORWARD 2
+#define NUM_COMMANDS_TURN 3
 #define NUMBER_WAIT 5
-#define SPEED 100
-#define TRIGGER_PIN  13
-#define ECHO_PIN     12
+#define SPEED 100 
+
+# define echoPin 12
+# define trigPin 13
 
 const int motorPinR1 = 4;    // Motor Right IN1
 const int motorPinR2 = 5;    // Motor Right IN2
-bool is_third_sensor = false
+bool is_third_sensor = false;
 
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
@@ -21,8 +22,7 @@ int MiddleSensor1 = 10;
 int MiddleSensor2 = 9;
 int RightSensor = 11;
 
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
-float distance;
+//NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 typedef struct
 {
@@ -228,7 +228,12 @@ void setup()
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
   pinMode(RightSensor, INPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  delay(400);
 }
+
+int max_counter = 200*10;
 
 void loop()
 {
@@ -237,25 +242,47 @@ void loop()
   //gather_data_sensor(, MiddleSensor2, );
   //gather_data_sensor(, RightSensor, );
 
-  distance = sonar.ping_cm();
-  
+  /*distance = sonar.ping_cm();
+  */
   // Send results to Serial Monitor
+
+  long duration, distance; // start the scan
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration*0.0344/2;
   Serial.print("Distance = ");
-  if (distance <= 10) {
+  if (distance <= 4) {
     Serial.println("Out of range");
-    terminate();
+    Serial.println(distance);
+       command command_stop = { 0, 0 };
+    do_command(command_stop);
+    delay(40);
+    exit(0);
   }
+  
   else {
     Serial.print(distance);
     Serial.println(" cm");
   }
+  delay(100);
+  if (max_counter==0){
+    command command_stop = { 0, 0 };
+    do_command(command_stop);
+    exit(0);
+  }
+  max_counter -= 1;
 
-  if (operation_now != get_next_operation() || ind == number_commands)
+  if (ind == number_commands)
   {
     ind = 0;
-    Serial.print("Next op: ");
+    free(commands_waiting);
+    //Serial.print("Next op: ");
     operation_now = get_next_operation();
-    Serial.println(operation_now);
+    //Serial.println(operation_now);
     number_commands = get_next_commands(&commands_waiting, operation_now);
   }
   if (commands_waiting != NULL)
