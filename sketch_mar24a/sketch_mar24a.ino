@@ -3,8 +3,8 @@
 #define WALL_WIDTH 2.35
 #define BIG_WALL 5
 #define IS_WALL 1
-#define NUM_COMMANDS_FORWARD 50
-#define NUM_COMMANDS_TURN 50
+#define NUM_COMMANDS_FORWARD 8
+#define NUM_COMMANDS_TURN 5
 #define NUMBER_WAIT 10
 #define SPEED 100
 
@@ -58,7 +58,7 @@ Move the robot forward.
 Accepts speed (0-255) to set motor speed.
 */
 void moveForward(int speed) {
-  moveMotor(motorPinR1, motorPinR2, 1, speed);  // Move right motor forward
+  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Move right motor forward
   moveMotor(motorPinL1, motorPinL2, 1, speed);  // Move left motor forward
 }
 
@@ -67,7 +67,7 @@ Move the robot backward.
 Accepts speed (0-255) to set motor speed.
 */
 void moveBackward(int speed) {
-  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Move right motor backward
+  moveMotor(motorPinR1, motorPinR2, 1, speed);  // Move right motor backward
   moveMotor(motorPinL1, motorPinL2, -1, speed);  // Move left motor backward
 }
 
@@ -76,7 +76,7 @@ Rotate the robot to the right.
 Right motor moves forward, left motor moves backward.
 */
 void turnRight(int speed) {
-  moveMotor(motorPinR1, motorPinR2, 1, speed);   // Right motor forward
+  moveMotor(motorPinR1, motorPinR2, -1, speed);   // Right motor forward
   moveMotor(motorPinL1, motorPinL2, -1, speed);  // Left motor backward
 }
 
@@ -85,7 +85,7 @@ Rotate the robot to the left.
 Right motor moves backward, left motor moves forward.
 */
 void turnLeft(int speed) {
-  moveMotor(motorPinR1, motorPinR2, -1, speed);  // Right motor backward
+  moveMotor(motorPinR1, motorPinR2, 1, speed);  // Right motor backward
   moveMotor(motorPinL1, motorPinL2, 1, speed);   // Left motor forward
 }
 
@@ -175,10 +175,10 @@ int get_next_commands(command** commands_waiting, int command_number)
 void do_command(command command_now)
 {
     if(command_now.speed_right == -1) {
-        moveMotor(motorPinR1, motorPinR2, -1, SPEED);
+        moveMotor(motorPinR1, motorPinR2, 1, SPEED);
     }
     if(command_now.speed_right == 1) {
-        moveMotor(motorPinR1, motorPinR2, 1, SPEED);
+        moveMotor(motorPinR1, motorPinR2, -1, SPEED);
     }
     if(command_now.speed_right == 0) {
         moveMotor(motorPinR1, motorPinR2, 0, SPEED);
@@ -196,11 +196,11 @@ void do_command(command command_now)
 
 int get_next_operation()
 {
-  if (digitalRead(MiddleSensor1) == 1 && digitalRead(MiddleSensor2) == 1)
+  if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0)
   {
     return 1;
   }
-  else if (digitalRead(MiddleSensor1) == 1 && digitalRead(MiddleSensor2) == 0)
+  else if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) != 0)
   {
     return 2;
   }
@@ -212,6 +212,7 @@ int get_next_operation()
 
 void setup()
 {
+  Serial.begin(9600);
   //pinMode(LeftSensor, INPUT);
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
@@ -227,11 +228,14 @@ void loop()
   if (ind == number_commands)
   {
     ind = 0;
+    Serial.print("Next op: ");
     int next_operation = get_next_operation();
+    Serial.println(next_operation);
     number_commands = get_next_commands(&commands_waiting, next_operation);
   }
   if (commands_waiting != NULL)
   {
+    Serial.print("In commands waiting");
     do_command(commands_waiting[ind]);
     ind++;
   }
