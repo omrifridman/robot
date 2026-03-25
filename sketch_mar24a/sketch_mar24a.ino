@@ -4,7 +4,7 @@
 #define BIG_WALL 5
 #define IS_WALL 1
 #define NUM_COMMANDS_FORWARD 8
-#define NUM_COMMANDS_BACKWARD 2
+#define NUM_COMMANDS_BACKWARD 6
 #define NUM_COMMANDS_TURN 5
 #define NUMBER_WAIT 5
 #define SPEED 100 
@@ -18,10 +18,11 @@ bool is_third_sensor = false;
 
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
-int LeftSensor = 8;
-int MiddleSensor1 = 10;
-int MiddleSensor2 = 9;
-int RightSensor = 11;
+int RightSensor2 = 8;
+int RightSensor1 = 9;
+int LeftSensor1 = 10;
+int LeftSensor2 = 11;
+int RightRightSensor = 7;
 
 //NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
@@ -230,35 +231,33 @@ void do_command(command command_now)
 // 4 - go back and after rotate x degrees right
 int get_next_operation()
 {
-  if (is_third_sensor && digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0 && digitalRead(RightSensor) == 0)
-  {
-    return 3;
-  }
-  else if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) == 0)
+  bool cond_left = (digitalRead(LeftSensor1) != 0 || digitalRead(LeftSensor2) != 0);
+  bool cond_right = (digitalRead(RightSensor1) != 0 || digitalRead(RightSensor2) != 0);
+  if ((!cond_left) && (!cond_right))
   {
     return 1;
   }
-  else if (digitalRead(MiddleSensor1) == 0 && digitalRead(MiddleSensor2) != 0)
+  else if ((!cond_left) && cond_right)
   {
     return 2;
   }
-  else if (digitalRead(MiddleSensor1) != 0 && digitalRead(MiddleSensor2) == 0)
+  else if (cond_left && (!cond_right))
   {
     return 3;
   }
-  else if (digitalRead(MiddleSensor1) != 0 && digitalRead(MiddleSensor2) != 0)
+  else if (cond_left && cond_right)
   {
-    return 3; // 4
+    return 3;
   }
 }
 
 void setup()
 {
   Serial.begin(9600);
-  //pinMode(LeftSensor, INPUT);
-  pinMode(MiddleSensor1, INPUT);
-  pinMode(MiddleSensor2, INPUT);
-  pinMode(RightSensor, INPUT);
+  pinMode(RightSensor2, INPUT);
+  pinMode(RightSensor1, INPUT);
+  pinMode(LeftSensor2, INPUT);
+  pinMode(LeftSensor1, INPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   delay(400);
@@ -276,7 +275,7 @@ void do_sonar()
   duration = pulseIn(echoPin, HIGH);
   distance = duration*0.0344/2;
   Serial.print("Distance = ");
-  if (distance <= 4) {
+  if (distance <= 20) {
     Serial.println("Out of range");
     Serial.println(distance);
        command command_stop = { 0, 0 };
