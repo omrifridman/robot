@@ -14,8 +14,8 @@ const int motorPinR2 = 5;    // Motor Right IN2
 const int motorPinL1 = 6;    // Motor Left IN1
 const int motorPinL2 = 7;   // Motor Left IN2
 int LeftSensor = 8;
-int MiddleSensor1 = 9;
-int MiddleSensor2 = 10;
+int MiddleSensor1 = 10;
+int MiddleSensor2 = 9;
 int RightSensor = 11;
 
 typedef struct
@@ -214,10 +214,10 @@ int get_next_operation()
 
 void setup()
 {
-  pinMode(LeftSensor, INPUT);
+  //pinMode(LeftSensor, INPUT);
   pinMode(MiddleSensor1, INPUT);
   pinMode(MiddleSensor2, INPUT);
-  pinMode(RightSensor, INPUT);
+  //pinMode(RightSensor, INPUT);
 }
 
 void loop()
